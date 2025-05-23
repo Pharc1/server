@@ -309,11 +309,13 @@ class AI:
         system_message = """
         You are a professional manga/webtoon writer. Your task is to create a compelling 
         story outline based on the provided prompt. The outline should include:
-        1. Setting (time period, location)
-        2. Main characters (with brief descriptions)
-        3. Plot summary
-        4. Key scenes that would make good visual panels
-        5. Theme and mood
+        1. Title of the story
+        2. Setting (time period, location)
+        3. Main characters (with brief descriptions)
+        4. Main place (if applicable)
+        5. Plot summary
+        6. Key scenes that would make good visual panels
+        7. Theme and mood
         
         Provide your response as a structured JSON with these elements.
         """
@@ -366,10 +368,11 @@ class AI:
             A list of validated PanelDescription objects
         """
         system_message = """
-        You are a professional manga/webtoon artist and writer. Your task is to create detailed 
+        You are a professional webtoon artist and writer. Your task is to create detailed 
         panel descriptions based on the provided story outline. Each panel description should include:
         1. Visual description (what should be drawn)
         2. Characters present
+        3. Place if applicable
         3. Dialogue (if any)
         4. Special effects or text elements
         5. Panel size recommendation (full-width, half-width, etc.)
@@ -405,6 +408,7 @@ class AI:
         self, 
         panel_description: str,
         characters: List[str],
+        place: Optional[str],
         style: str
     ) -> str:
         """
@@ -419,21 +423,26 @@ class AI:
             A detailed prompt for image generation
         """
         system_message = """
-        You are a professional manga/webtoon artist. Your task is to create a detailed prompt 
+        You are a professional webtoon artist. Your task is to create a detailed prompt 
         for an image generation AI based on the panel description provided. The prompt should be 
-        detailed and specific, including:
-        1. Scene description
-        2. Character positions and expressions
+        detailed and specific to the description panel only, including:
+        1. Scene description or directly place name
+        2. Character positions and expressions if any 
         3. Lighting and atmosphere
         4. Art style references
         5. Composition details
         
         The prompt should be detailed yet concise, optimized for image generation AI.
+
+        If you need to refer to specific characters, use their names as provided with @ prefix.
+        If you need to refer to specific place, use the place name as provided.
+        for example, @CharacterName is climbing a tree in @PlaceName while...
         """
         
         user_message = f"""
         Panel description: {panel_description}
         Characters: {', '.join(characters)}
+        Place: {place}
         Style: {style}
         
         Create a detailed image generation prompt that will result in a high-quality {style}-style illustration.

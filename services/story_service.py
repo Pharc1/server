@@ -85,7 +85,7 @@ class StoryService:
                 # Extract panel information
                 description = panel_desc.get("visual_description", "")
                 characters = panel_desc.get("characters", [])
-                
+                place = panel_desc.get("place", "")
                 # Process dialogue
                 dialogue = panel_desc.get("dialogue", [])
                 speech_bubbles = []
@@ -255,6 +255,7 @@ class StoryService:
                     panel_id=panel_id,
                     description=description,
                     characters=characters,
+                    place=place,
                     dialogue=dialogue,
                     speech_bubbles=speech_bubbles,
                     size=panel_size,

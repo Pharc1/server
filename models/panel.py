@@ -14,6 +14,7 @@ class Panel(BaseModel):
     panel_id: str = Field(default_factory=lambda: str(uuid4()))
     description: str = Field(..., description="Visual description of what should be drawn")
     characters: List[str] = Field(default_factory=list, description="Characters present in the panel")
+    place: str = Field(default=None, description="Location or setting of the panel")
     dialogue: List[Any] = Field(default_factory=list, description="Dialogue lines in the panel")
     speech_bubbles: List[SpeechBubble] = Field(default_factory=list, description="Speech bubbles with positioning")
     size: str = Field(default="full", description="Panel size (full, half, third)")
@@ -46,6 +47,7 @@ class PanelRequest(BaseModel):
     """
     description: str = Field(..., description="Visual description of what should be drawn")
     characters: List[str] = Field(default_factory=list, description="Characters to include in the panel")
+    place: str = Field(default=None, description="Location or setting of the panel")
     dialogue: List[str] = Field(default_factory=list, description="Dialogue lines for the panel")
     size: str = Field(default="full", description="Panel size (full, half, third)")
     caption: Optional[str] = Field(default=None, description="Caption text for the panel")

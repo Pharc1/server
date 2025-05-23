@@ -6,7 +6,7 @@ import base64
 import aiohttp
 import aiofiles
 import logging
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 from datetime import datetime
 
 from core.ai import AI
@@ -31,6 +31,7 @@ class ImageService:
         self.ai = ai
         # Try to get API key from multiple possible environment variable names
         self.api_key = os.getenv("STABILITY_API_KEY") or os.getenv("STABLE_DIFFUSION_API_KEY")
+        self.runway_api_key = os.getenv("RUNWAY_API_KEY")
         self.image_api_url = os.getenv(
             "IMAGE_API_URL", 
             "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image"
@@ -52,8 +53,11 @@ class ImageService:
         self, 
         panel_description: str,
         characters: List[str],
+        place: str,
         style: str,
-        filename_prefix: str
+        images_ref: Dict[str, str],
+        filename_prefix: str,
+        model: Optional[str] = "stability"
     ) -> Tuple[str, str]:
         """
         Generate an image for a panel
@@ -73,13 +77,14 @@ class ImageService:
             # Generate a detailed prompt for the image generator
             image_prompt = await self.ai.generate_image_prompt(
                 panel_description, 
-                characters, 
+                characters,
+                place, 
                 style
             )
             logger.debug(f"Generated image prompt: {image_prompt[:100]}...")
             
             # Generate the image
-            image_path, image_url = await self._call_image_api(image_prompt, style, filename_prefix)
+            image_path, image_url = await self._call_image_api(image_prompt, style,images_ref,  filename_prefix)
             logger.info(f"Image generated at: {image_path} (URL: {image_url})")
             
             return image_path, image_url
@@ -90,11 +95,80 @@ class ImageService:
             placeholder_path = await self._generate_placeholder_image(filename_prefix)
             return placeholder_path
     
+
+    async def generate_place_image(
+        self,
+        place: str,
+        style: str,
+        filename_prefix: str,
+        model: Optional[str] = "stability"
+    ) -> Tuple[str, str]:
+        """
+        Generate an image for a place
+        
+        Args:
+            place: Description of the place
+            style: Art style for the image (manga, webtoon, etc.)
+            filename_prefix: Prefix for the generated image filename
+            
+        Returns:
+            Tuple containing (file_system_path, accessible_url) for the generated image
+        """
+        logger.info(f"Generating image for place: {filename_prefix}")
+        
+        try:
+            # Generate the image
+            image_path, image_url = await self._call_image_api(place, style, filename_prefix)
+            logger.info(f"Place image generated at: {image_path} (URL: {image_url})")
+            
+            return image_path, image_url
+        
+        except Exception as e:
+            logger.error(f"Error generating place image: {str(e)}")
+            # Return a placeholder image path
+            placeholder_path = await self._generate_placeholder_image(filename_prefix)
+            return placeholder_path
+    
+    async def generate_character_image(
+        self,
+        character: str,
+        style: str,
+        filename_prefix: str,
+        model: Optional[str] = "stability"
+    ) -> Tuple[str, str]:
+        """
+        Generate an image for a character
+        
+        Args:
+            character: Description of the character
+            style: Art style for the image (manga, webtoon, etc.)
+            filename_prefix: Prefix for the generated image filename
+            
+        Returns:
+            Tuple containing (file_system_path, accessible_url) for the generated image
+        """
+        logger.info(f"Generating image for character: {filename_prefix}")
+        
+        try:
+            # Generate the image
+            image_path, image_url = await self._call_image_api(character, style, filename_prefix)
+            logger.info(f"Character image generated at: {image_path} (URL: {image_url})")
+            
+            return image_path, image_url
+        
+        except Exception as e:
+            logger.error(f"Error generating character image: {str(e)}")
+            # Return a placeholder image path
+            placeholder_path = await self._generate_placeholder_image(filename_prefix)
+            return placeholder_path
+    
     async def _call_image_api(
         self, 
         prompt: str, 
         style: str,
-        filename_prefix: str
+        filename_prefix: str,
+        images_ref: Optional[Dict[str, str]] = None,
+        model: Optional[str] = "stability"
     ) -> Tuple[str, str]:
         """
         Call the image generation API
@@ -118,84 +192,106 @@ class ImageService:
         
         full_prompt = style_prefix + prompt
         logger.debug(f"Full image prompt: {full_prompt[:100]}...")
+
+        if model == "runway":
+            # check if we have the API key for Runway
+            if not self.runway_api_key:
+                logger.warning("No Runway API key found, using placeholder image")
+                return await self._generate_placeholder_image(filename_prefix)
+            logger.info("Using Runway API to generate image")
+            # Call Runway API for image generation
+            try:
+                #TODO: Implement the Runway API call
+                # runwayService.generate_image(
+                #     prompt=full_prompt,
+                #     style=style,
+                #     images_ref=images_ref
+                # )
+                
+            except Exception as e:
+                logger.error(f"Error calling Runway API: {str(e)}")
+                return await self._generate_placeholder_image(filename_prefix)
+            
         
-        # Check if we have the API key for Stability AI
-        if not self.api_key:
-            logger.warning("No Stability API key found, using placeholder image")
-            return await self._generate_placeholder_image(filename_prefix)
-        
-        # Log that we're attempting to generate an image with Stable Diffusion
-        logger.info("Using Stable Diffusion API to generate image")
-        
-        # Call Stability AI API for image generation
-        try:
-            headers = {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authorization": f"Bearer {self.api_key}"
-            }
+
+        if model == "stability":
+            # Check if we have the API key for Stability AI
+            if not self.api_key:
+                logger.warning("No Stability API key found, using placeholder image")
+                return await self._generate_placeholder_image(filename_prefix)
             
-            # Truncate prompt to avoid API error (max 2000 chars)
-            truncated_prompt = full_prompt[:1950] if len(full_prompt) > 1950 else full_prompt
-            if len(full_prompt) > 1950:
-                logger.warning(f"Prompt was truncated from {len(full_prompt)} to 1950 characters")
+            # Log that we're attempting to generate an image with Stable Diffusion
+            logger.info("Using Stable Diffusion API to generate image")
             
-            # Use valid dimensions for SDXL v1.0
-            # Valid pairs: 1024x1024, 1152x896, 1216x832, 1344x768, 1536x640, 640x1536, 768x1344, 832x1216, 896x1152
-            payload = {
-                "text_prompts": [
-                    {"text": truncated_prompt, "weight": 1.0}
-                ],
-                "cfg_scale": 7,
-                # Use standard square dimensions which work well for manga panels
-                "height": 1024,
-                "width": 1024,
-                "samples": 1,
-                "steps": 30,
-            }
-            
-            logger.debug("Calling Stability AI API")
-            
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    self.image_api_url, 
-                    json=payload, 
-                    headers=headers
-                ) as response:
-                    if response.status == 200:
-                        response_data = await response.json()
-                        
-                        # Process the generated image
-                        if "artifacts" in response_data and len(response_data["artifacts"]) > 0:
-                            # Get the first generated image
-                            image_data = response_data["artifacts"][0]["base64"]
+            # Call Stability AI API for image generation
+            try:
+                headers = {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "Authorization": f"Bearer {self.api_key}"
+                }
+                
+                # Truncate prompt to avoid API error (max 2000 chars)
+                truncated_prompt = full_prompt[:1950] if len(full_prompt) > 1950 else full_prompt
+                if len(full_prompt) > 1950:
+                    logger.warning(f"Prompt was truncated from {len(full_prompt)} to 1950 characters")
+                
+                # Use valid dimensions for SDXL v1.0
+                # Valid pairs: 1024x1024, 1152x896, 1216x832, 1344x768, 1536x640, 640x1536, 768x1344, 832x1216, 896x1152
+                payload = {
+                    "text_prompts": [
+                        {"text": truncated_prompt, "weight": 1.0}
+                    ],
+                    "cfg_scale": 7,
+                    # Use standard square dimensions which work well for manga panels
+                    "height": 1024,
+                    "width": 1024,
+                    "samples": 1,
+                    "steps": 30,
+                }
+                
+                logger.debug("Calling Stability AI API")
+                
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(
+                        self.image_api_url, 
+                        json=payload, 
+                        headers=headers
+                    ) as response:
+                        if response.status == 200:
+                            response_data = await response.json()
                             
-                            # Save the image to disk
-                            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                            image_filename = f"{filename_prefix}_{timestamp}.png"
-                            image_path = f"{IMAGES_PATH}/{image_filename}"
-                            
-                            # Decode and save image
-                            image_bytes = base64.b64decode(image_data)
-                            async with aiofiles.open(image_path, "wb") as f:
-                                await f.write(image_bytes)
-                            
-                            # Generate accessible URL
-                            image_url = get_image_url(image_path)
-                            
-                            logger.info(f"Image saved to {image_path} (URL: {image_url})")
-                            return image_path, image_url
+                            # Process the generated image
+                            if "artifacts" in response_data and len(response_data["artifacts"]) > 0:
+                                # Get the first generated image
+                                image_data = response_data["artifacts"][0]["base64"]
+                                
+                                # Save the image to disk
+                                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                                image_filename = f"{filename_prefix}_{timestamp}.png"
+                                image_path = f"{IMAGES_PATH}/{image_filename}"
+                                
+                                # Decode and save image
+                                image_bytes = base64.b64decode(image_data)
+                                async with aiofiles.open(image_path, "wb") as f:
+                                    await f.write(image_bytes)
+                                
+                                # Generate accessible URL
+                                image_url = get_image_url(image_path)
+                                
+                                logger.info(f"Image saved to {image_path} (URL: {image_url})")
+                                return image_path, image_url
+                            else:
+                                logger.error("No image artifacts returned from API")
+                                return await self._generate_placeholder_image(filename_prefix)
                         else:
-                            logger.error("No image artifacts returned from API")
+                            error_text = await response.text()
+                            logger.error(f"API error ({response.status}): {error_text}")
                             return await self._generate_placeholder_image(filename_prefix)
-                    else:
-                        error_text = await response.text()
-                        logger.error(f"API error ({response.status}): {error_text}")
-                        return await self._generate_placeholder_image(filename_prefix)
-        
-        except Exception as e:
-            logger.error(f"Error calling image API: {str(e)}")
-            return await self._generate_placeholder_image(filename_prefix)
+            
+            except Exception as e:
+                logger.error(f"Error calling image API: {str(e)}")
+                return await self._generate_placeholder_image(filename_prefix)
     
     async def _generate_placeholder_image(self, filename_prefix: str) -> Tuple[str, str]:
         """

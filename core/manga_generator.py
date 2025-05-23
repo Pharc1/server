@@ -84,7 +84,7 @@ class MangaGenerator:
             
         return panels
     
-    async def generate_image_for_panel(self, panel: Panel, style: str) -> str:
+    async def generate_image_for_panel(self, panel: Panel, style: str, images_ref: Dict[str, str]) -> str:
         """
         Generate an image for a specific panel
         
@@ -102,7 +102,9 @@ class MangaGenerator:
             file_path, image_url = await self.image_service.generate_image(
                 panel.description,
                 panel.characters,
+                panel.place,
                 style,
+                images_ref,
                 f"panel_{panel.panel_id}"
             )
             
@@ -120,6 +122,84 @@ class MangaGenerator:
             placeholder_url = get_image_url(placeholder_path)
             panel.image_path = placeholder_url
             return placeholder_url
+        
+    async def generate_character_image(self, character: str) -> str:
+        """
+        Generate an image for a specific character
+        
+        Args:
+            character: The character name or description
+            
+        Returns:
+            The URL to the generated character image
+        """
+        logger.info(f"Generating image for character {character}")
+        
+        try:
+            # Image service now returns both file_path and url
+            file_path, image_url = await self.image_service.generate_character_image(character)
+            
+            logger.info(f"Character image generated at {file_path} (URL: {image_url})")
+            return image_url
+            
+        except Exception as e:
+            logger.error(f"Error generating image for character {character}: {str(e)}")
+            # Use a placeholder image if generation fails
+            placeholder_path = "static/images/placeholder.jpg"
+            placeholder_url = get_image_url(placeholder_path)
+            return placeholder_url
+        
+    async def generate_place_image(self, place: str) -> str:
+        """
+        Generate an image for a specific place
+        
+        Args:
+            place: The place name or description
+            
+        Returns:
+            The URL to the generated place image
+        """
+        logger.info(f"Generating image for place {place}")
+        
+        try:
+            # Image service now returns both file_path and url
+            file_path, image_url = await self.image_service.generate_place_image(place)
+            
+            logger.info(f"Place image generated at {file_path} (URL: {image_url})")
+            return image_url
+            
+        except Exception as e:
+            logger.error(f"Error generating image for place {place}: {str(e)}")
+            # Use a placeholder image if generation fails
+            placeholder_path = "static/images/placeholder.jpg"
+            placeholder_url = get_image_url(placeholder_path)
+            return placeholder_url
+
+        
+    async def generate_images_reference(self, story: Dict[str, Any] ) -> Dict[str, str]:
+        """
+        Generate reference images for all panels in the story
+        
+        Args:
+            story: List of Panel objects
+            
+        Returns:
+            Dictionary mapping reference IDs to their image URLs
+        """
+        logger.info("Generating images for all panels")
+        image_urls = {}
+        
+        if story.characters:
+            for character in story.characters:
+                # Generate images for each character
+                image_url = await self.image_service.generate_character_image(character)
+                image_urls[character.name] = image_url
+        if story.place:
+            # Generate images for the place
+            image_url = await self.image_service.generate_place_image(story.place)
+            image_urls[story.place] = image_url
+            
+        return image_urls
         
     async def generate_html_output(self, panels: List[Panel], task_id: str) -> str:
         """

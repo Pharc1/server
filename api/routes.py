@@ -80,8 +80,29 @@ async def generate_webtoon_task(
                 # Wait briefly before retry
                 await asyncio.sleep(1)
         
-        tasks[task_id].progress = 0.3
-        
+        tasks[task_id].progress = 0.1
+
+        # Add retry logic with a maximum number of attempts
+        logger.info(f"Generating images reference for task {task_id}")
+        attempt = 0
+        while attempt < max_attempts:
+            try:
+                attempt += 1
+                images_ref = await generator.generate_images_reference(
+                    story, 
+                )
+                break
+            except Exception as e:
+                logger.warning(f"Image reference generation attempt {attempt}/{max_attempts} failed: {str(e)}")
+                if attempt >= max_attempts:
+                    raise ValueError(f"Failed to generate images reference after {max_attempts} attempts: {str(e)}")
+                await asyncio.sleep(1)
+
+
+
+
+
+
         # Generate panels and update progress with similar retry logic
         logger.info(f"Generating panels for task {task_id}")
         attempt = 0
@@ -93,6 +114,7 @@ async def generate_webtoon_task(
                 panels = await generator.generate_panels(
                     story, 
                     request.num_panels
+                    
                 )
                 break
             except Exception as e:
@@ -108,7 +130,8 @@ async def generate_webtoon_task(
         for i, panel in enumerate(panels):
             await generator.generate_image_for_panel(
                 panel, 
-                request.style
+                request.style,
+                images_ref
             )
             tasks[task_id].progress = 0.5 + ((i + 1) / len(panels) * 0.4)
         
