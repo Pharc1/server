@@ -8,13 +8,15 @@ import aiofiles
 import logging
 from typing import List, Optional, Tuple, Dict
 from datetime import datetime
-
+from runway_service import RunwayService
 from core.ai import AI
 from utils.helpers import ensure_directories_exist
 from config import IMAGES_PATH, get_image_url
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+runwayService = RunwayService()
 
 class ImageService:
     """
@@ -201,12 +203,12 @@ class ImageService:
             logger.info("Using Runway API to generate image")
             # Call Runway API for image generation
             try:
-                #TODO: Implement the Runway API call
-                # runwayService.generate_image(
-                #     prompt=full_prompt,
-                #     style=style,
-                #     images_ref=images_ref
-                # )
+                
+                runwayService.generate_image(
+                    prompt=full_prompt,
+                    style=style,
+                    images_ref=images_ref
+                )
                 
             except Exception as e:
                 logger.error(f"Error calling Runway API: {str(e)}")
