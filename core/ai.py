@@ -312,7 +312,7 @@ class AI:
         1. Title of the story
         2. Setting (time period, location)
         3. Main characters (with brief descriptions)
-        4. Main place (if applicable)
+        4. Main place 
         5. Plot summary
         6. Key scenes that would make good visual panels
         7. Theme and mood
@@ -434,9 +434,10 @@ class AI:
         
         The prompt should be detailed yet concise, optimized for image generation AI.
 
-        If you need to refer to specific characters, use their names as provided with @ prefix.
-        If you need to refer to specific place, use the place name as provided.
+        If you need to refer to specific characters, always use their names if provided with @ prefix.
+        If you need to refer to specific place, always use the place name if provided with @ prefix.
         for example, @CharacterName is climbing a tree in @PlaceName while...
+        your response must be a string no special formatting no markdown just sentences
         """
         
         user_message = f"""

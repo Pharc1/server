@@ -84,7 +84,7 @@ class MangaGenerator:
             
         return panels
     
-    async def generate_image_for_panel(self, panel: Panel, style: str, images_ref: Dict[str, str]) -> str:
+    async def generate_image_for_panel(self, panel: Panel, style: str, images_ref: List) -> str:
         """
         Generate an image for a specific panel
         
@@ -137,7 +137,7 @@ class MangaGenerator:
         
         try:
             # Image service now returns both file_path and url
-            file_path, image_url = await self.image_service.generate_character_image(character)
+            file_path, image_url = await self.image_service.generate_character_image(character, f"character_{character[:10:]}")
             
             logger.info(f"Character image generated at {file_path} (URL: {image_url})")
             return image_url
@@ -163,7 +163,7 @@ class MangaGenerator:
         
         try:
             # Image service now returns both file_path and url
-            file_path, image_url = await self.image_service.generate_place_image(place)
+            file_path, image_url = await self.image_service.generate_place_image(place, f"place_{place[:10:]}")
             
             logger.info(f"Place image generated at {file_path} (URL: {image_url})")
             return image_url
@@ -187,23 +187,24 @@ class MangaGenerator:
             Dictionary mapping reference IDs to their image URLs
         """
         logger.info("Generating images for all panels")
-        #TODO: must return a list of dictionnary with ley uri and tag
         image_urls = []
-        
-        if story.characters:
-            for character in story.characters:
+        i= 0
+        if story.get("main_characters"):
+            for character in story.get("main_characters"):
+                
                 # Generate images for each character
-                image_url = await self.image_service.generate_character_image(character)
+                image_url = await self.image_service.generate_character_image(character.get("description"), f"character_{character.get('name', f'default_{i}')}")
                 image_urls.append({
                     "uri":image_url,
-                    "tag": character.name
+                    "tag": character.get("name")
                 })
-        if story.place:
+                i= i + 1
+        if story.get("main_place"):
             # Generate images for the place
-            image_url = await self.image_service.generate_place_image(story.place)
+            image_url = await self.image_service.generate_place_image(story.get("main_place").get("description", "default_place"), f"place_{story.get('main_place').get('name', 'default_place')}")
             image_urls.append({
                 "uri":image_url,
-                "tag":story.place
+                "tag":story.get("main_place").get("name", "default_place")
             })
             
         return image_urls

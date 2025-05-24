@@ -10,7 +10,7 @@ def verify_env_vars():
     """Verify that all required environment variables are set"""
     required_vars = [
         "OPENAI_API_KEY",
-        "STABLE_DIFFUSION_API_KEY"
+        # "STABLE_DIFFUSION_API_KEY"
     ]
     
     missing_vars = [var for var in required_vars if not os.getenv(var)]

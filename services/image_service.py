@@ -8,7 +8,7 @@ import aiofiles
 import logging
 from typing import List, Optional, Tuple, Dict
 from datetime import datetime
-from runway_service import RunwayService
+from services.runway_service import RunwayService
 from core.ai import AI
 from utils.helpers import ensure_directories_exist
 from config import IMAGES_PATH, get_image_url
@@ -57,7 +57,7 @@ class ImageService:
         characters: List[str],
         place: str,
         style: str,
-        images_ref: Dict[str, str],
+        images_ref: List,
         filename_prefix: str,
         model: Optional[str] = "stability"
     ) -> Tuple[str, str]:
@@ -101,7 +101,6 @@ class ImageService:
     async def generate_place_image(
         self,
         place: str,
-        style: str,
         filename_prefix: str,
         model: Optional[str] = "stability"
     ) -> Tuple[str, str]:
@@ -120,7 +119,7 @@ class ImageService:
         
         try:
             # Generate the image
-            image_path, image_url = await self._call_image_api(place, style, filename_prefix)
+            image_path, image_url = await self._call_image_api(place, "webtoon", filename_prefix)
             logger.info(f"Place image generated at: {image_path} (URL: {image_url})")
             
             return image_path, image_url
@@ -134,7 +133,6 @@ class ImageService:
     async def generate_character_image(
         self,
         character: str,
-        style: str,
         filename_prefix: str,
         model: Optional[str] = "stability"
     ) -> Tuple[str, str]:
@@ -153,7 +151,7 @@ class ImageService:
         
         try:
             # Generate the image
-            image_path, image_url = await self._call_image_api(character, style, filename_prefix)
+            image_path, image_url = await self._call_image_api("portrait" + character, "webtoon", filename_prefix)
             logger.info(f"Character image generated at: {image_path} (URL: {image_url})")
             
             return image_path, image_url
@@ -167,10 +165,10 @@ class ImageService:
     async def _call_image_api(
         self, 
         prompt: str, 
-        style: str,
+        style: str ,
         filename_prefix: str,
-        images_ref: Optional[Dict[str, str]] = None,
-        model: Optional[str] = "stability"
+        images_ref: Optional[List] = None,
+        model: Optional[str] = "runway"
     ) -> Tuple[str, str]:
         """
         Call the image generation API
@@ -204,11 +202,12 @@ class ImageService:
             # Call Runway API for image generation
             try:
                 
-                runwayService.generate_image(
+                image_url = await runwayService.generate_image(
                     prompt=full_prompt,
-                    style=style,
-                    images_ref=images_ref
+                    ref=images_ref
                 )
+
+                return image_url, image_url
                 
             except Exception as e:
                 logger.error(f"Error calling Runway API: {str(e)}")

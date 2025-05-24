@@ -1,6 +1,7 @@
 """
 API routes for manga/webtoon generation
 """
+import asyncio
 import logging
 import os
 import uuid
@@ -72,7 +73,9 @@ async def generate_webtoon_task(
                     request.additional_context
                 )
                 # If successful, break out of the retry loop
+                print(f"Story generated successfully on attempt {story}")
                 break
+                
             except Exception as e:
                 logger.warning(f"Attempt {attempt}/{max_attempts} failed: {str(e)}")
                 if attempt >= max_attempts:
@@ -91,6 +94,7 @@ async def generate_webtoon_task(
                 images_ref = await generator.generate_images_reference(
                     story, 
                 )
+                print(f"Images reference generated: {images_ref}")
                 break
             except Exception as e:
                 logger.warning(f"Image reference generation attempt {attempt}/{max_attempts} failed: {str(e)}")

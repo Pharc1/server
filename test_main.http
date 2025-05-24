@@ -12,11 +12,11 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "prompt": "A cyberpunk detective story with a female protagonist in a neon city",
+  "prompt": "A modern isekai story with a female protagonist in a dark city",
   "style": "webtoon",
-  "num_panels": 4,
-  "characters": ["Detective Yuki", "Informant Lee"],
-  "additional_context": "The story should have a noir feel with futuristic technology"
+  "num_panels": 2,
+  "characters": ["Yuki"],
+  "additional_context": "The story should have a noir feel with futuristic technology and only One main character"
 }
 
 ### Check Task Status

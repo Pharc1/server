@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from typing import List
 from runwayml import RunwayML
 
 
@@ -14,16 +15,21 @@ class RunwayService:
             logger.info("Runway API key founded")
         else:
             logger.info("no Runway api key founded")
-        self.client = RunwayML()
+        self.client = RunwayML(api_key=self.api_key)
 
-    async def generate_image(prompt: str, ref: Dict[str, str], size: str = "1080:1920") -> str:
+    async def generate_image(self, prompt: str, ref: List, size: str = "1080:1920") -> str:
+        print(f"Generating image with prompt: {prompt}, size: {size}, reference images: {ref}")
+        
+        task_params = {
+            'model': 'gen4_image',
+            'ratio': size,
+            'prompt_text': prompt,
+        }
 
-        task = self.client.text_to_image.create(
-        model='gen4_image',
-        ratio=size,
-        prompt_text=prompt,
-        reference_images=ref,
-        )
+        if ref:
+            task_params['reference_images'] = ref
+
+        task = self.client.text_to_image.create(**task_params)
         task_id = task.id
 
         # Poll the task until it's complete
@@ -34,5 +40,6 @@ class RunwayService:
             task = self.client.tasks.retrieve(task_id)
 
         logger.info('Task complete:', task)
-        logger.info('Image URL: ', task.output[0])
+        print(f'Image URL for prompt {prompt}: ', task.output[0])
+
         return task.output[0]
