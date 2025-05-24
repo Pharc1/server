@@ -187,6 +187,7 @@ class MangaGenerator:
             Dictionary mapping reference IDs to their image URLs
         """
         logger.info("Generating images for all panels")
+        #TODO: must return a list of dictionnary with ley uri and tag
         image_urls = {}
         
         if story.characters:
