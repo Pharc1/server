@@ -188,17 +188,23 @@ class MangaGenerator:
         """
         logger.info("Generating images for all panels")
         #TODO: must return a list of dictionnary with ley uri and tag
-        image_urls = {}
+        image_urls = []
         
         if story.characters:
             for character in story.characters:
                 # Generate images for each character
                 image_url = await self.image_service.generate_character_image(character)
-                image_urls[character.name] = image_url
+                image_urls.append({
+                    "uri":image_url,
+                    "tag": character.name
+                })
         if story.place:
             # Generate images for the place
             image_url = await self.image_service.generate_place_image(story.place)
-            image_urls[story.place] = image_url
+            image_urls.append({
+                "uri":image_url,
+                "tag":story.place
+            })
             
         return image_urls
         
