@@ -193,18 +193,18 @@ class MangaGenerator:
             for character in story.get("main_characters"):
                 
                 # Generate images for each character
-                image_url = await self.image_service.generate_character_image(character.get("description"), f"character_{character.get('name', f'default_{i}')}")
+                image_url, image_path = await self.image_service.generate_character_image(character.get("description"), f"character_{character.get('name', f'default_{i}')}")
                 image_urls.append({
                     "uri":image_url,
-                    "tag": character.get("name")
+                    "tag": character.get("name").strip().split(" ")[0]
                 })
                 i= i + 1
         if story.get("main_place"):
             # Generate images for the place
-            image_url = await self.image_service.generate_place_image(story.get("main_place").get("description", "default_place"), f"place_{story.get('main_place').get('name', 'default_place')}")
+            image_url, image_path = await self.image_service.generate_place_image(story.get("main_place").get("description", "default_place"), f"place_{story.get('main_place').get('name', 'default_place')}")
             image_urls.append({
                 "uri":image_url,
-                "tag":story.get("main_place").get("name", "default_place")
+                "tag":story.get("main_place").get("name", "default_place").strip().split(" ")[0]
             })
             
         return image_urls

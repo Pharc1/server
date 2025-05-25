@@ -86,7 +86,7 @@ class ImageService:
             logger.debug(f"Generated image prompt: {image_prompt[:100]}...")
             
             # Generate the image
-            image_path, image_url = await self._call_image_api(image_prompt, style,images_ref,  filename_prefix)
+            image_path, image_url = await self._call_image_api(image_prompt, style,filename_prefix, images_ref)
             logger.info(f"Image generated at: {image_path} (URL: {image_url})")
             
             return image_path, image_url
@@ -119,7 +119,7 @@ class ImageService:
         
         try:
             # Generate the image
-            image_path, image_url = await self._call_image_api(place, "webtoon", filename_prefix)
+            image_path, image_url = await self._call_image_api("place, " + place, "webtoon", filename_prefix)
             logger.info(f"Place image generated at: {image_path} (URL: {image_url})")
             
             return image_path, image_url
@@ -151,7 +151,7 @@ class ImageService:
         
         try:
             # Generate the image
-            image_path, image_url = await self._call_image_api("portrait" + character, "webtoon", filename_prefix)
+            image_path, image_url = await self._call_image_api("portrait, " + character, "webtoon", filename_prefix)
             logger.info(f"Character image generated at: {image_path} (URL: {image_url})")
             
             return image_path, image_url
@@ -186,7 +186,7 @@ class ImageService:
         if style.lower() == "manga":
             style_prefix = "Manga style, black and white, detailed linework, "
         elif style.lower() == "webtoon":
-            style_prefix = "Webtoon style, vibrant colors, clean linework, "
+            style_prefix = "Webtoon style,anime"
         elif style.lower() == "comic":
             style_prefix = "Comic book style, strong outlines, flat colors, "
         

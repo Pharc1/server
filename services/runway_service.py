@@ -23,7 +23,7 @@ class RunwayService:
         task_params = {
             'model': 'gen4_image',
             'ratio': size,
-            'prompt_text': prompt,
+            'prompt_text': prompt[1000:] if len(prompt) > 1000 else prompt,
         }
 
         if ref:
@@ -40,6 +40,8 @@ class RunwayService:
             task = self.client.tasks.retrieve(task_id)
 
         logger.info('Task complete:', task)
-        print(f'Image URL for prompt {prompt}: ', task.output[0])
+        if not task.output:
+            raise ValueError(f"Task failed or returned no output! Status: {task.status}, ID: {task.id}")
 
+        print(f'Image URL for prompt {prompt}: ', task.output[0])
         return task.output[0]

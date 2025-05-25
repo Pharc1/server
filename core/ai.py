@@ -19,6 +19,7 @@ class StoryResponse(BaseModel):
     """Story generation response schema"""
     setting: Dict[str, str] = Field(..., description="Time period and location details")
     main_characters: List[Dict[str, str]] = Field(..., description="List of main characters with descriptions")
+    main_place: Dict[str, str] = Field(..., description="Main place with a single word name and description")
     plot_summary: str = Field(..., description="Summary of the plot")
     key_scenes: List[Union[str, Dict[str, str]]] = Field(..., description="Key scenes for visual panels, can be strings or dictionaries with 'scene' key")
     theme: str = Field(..., description="Theme of the story")
@@ -312,7 +313,7 @@ class AI:
         1. Title of the story
         2. Setting (time period, location)
         3. Main characters (with brief descriptions)
-        4. Main place 
+        4. Main place (with brief descriptions, and a name with single word)
         5. Plot summary
         6. Key scenes that would make good visual panels
         7. Theme and mood
@@ -432,10 +433,10 @@ class AI:
         4. Art style references
         5. Composition details
         
-        The prompt should be detailed yet concise, optimized for image generation AI.
+        The prompt should be concise, under 1000 Characters describing only what appearing on the image.
 
-        If you need to refer to specific characters, always use their names if provided with @ prefix.
-        If you need to refer to specific place, always use the place name if provided with @ prefix.
+        If you need to refer to specific characters, always use their names only if provided in characters with @ prefix.
+        If you need to refer to specific place, always use the place name only if provided in place with @ prefix.
         for example, @CharacterName is climbing a tree in @PlaceName while...
         your response must be a string no special formatting no markdown just sentences
         """

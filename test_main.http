@@ -16,7 +16,7 @@ Accept: application/json
   "style": "webtoon",
   "num_panels": 2,
   "characters": ["Yuki"],
-  "additional_context": "The story should have a noir feel with futuristic technology and only One main character"
+  "additional_context": "The story should have a black feel with dark plot and only One main character"
 }
 
 ### Check Task Status
