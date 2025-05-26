@@ -151,7 +151,7 @@ class ImageService:
         
         try:
             # Generate the image
-            image_path, image_url = await self._call_image_api("portrait, " + character, "webtoon", filename_prefix)
+            image_path, image_url = await self._call_image_api("Full-body shot" + character, "webtoon", filename_prefix)
             logger.info(f"Character image generated at: {image_path} (URL: {image_url})")
             
             return image_path, image_url
@@ -186,7 +186,7 @@ class ImageService:
         if style.lower() == "manga":
             style_prefix = "Manga style, black and white, detailed linework, "
         elif style.lower() == "webtoon":
-            style_prefix = "Webtoon style,anime"
+            style_prefix = "Webtoon, anime , detailled, "
         elif style.lower() == "comic":
             style_prefix = "Comic book style, strong outlines, flat colors, "
         

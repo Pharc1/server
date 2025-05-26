@@ -312,7 +312,7 @@ class AI:
         story outline based on the provided prompt. The outline should include:
         1. Title of the story
         2. Setting (time period, location)
-        3. Main characters (with brief descriptions)
+        3. Main characters (with brief visual descriptions)
         4. Main place (with brief descriptions, and a name with single word)
         5. Plot summary
         6. Key scenes that would make good visual panels
@@ -438,6 +438,7 @@ class AI:
         If you need to refer to specific characters, always use their names only if provided in characters with @ prefix.
         If you need to refer to specific place, always use the place name only if provided in place with @ prefix.
         for example, @CharacterName is climbing a tree in @PlaceName while...
+        Use @ everytime you refer to a character or place, if you don't need to refer to a character or place, just give a description.
         your response must be a string no special formatting no markdown just sentences
         """
         

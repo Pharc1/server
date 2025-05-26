@@ -12,11 +12,11 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "prompt": "A modern isekai story with a female protagonist in a dark city",
+  "prompt": "Lina, une étudiante en droit épuisée par sa vie morne et les injustices du monde réel, meurt dans un accident de métro. Mais au lieu du néant, elle ouvre les yeux dans une ville noire aux reflets pourpres : une métropole figée entre la réalité et l'enfer, où les lois sont écrites par des clans surnaturels et où les faibles disparaissent sans laisser de trace. Dans ce isekai urbain, elle n’est plus une simple étudiante : elle est la nouvelle Reine du Trône de Verre, une position vacante depuis des siècles, capable de manipuler les serments, les contrats et les chaînes mentales par la parole. Sa voix est une arme. Son regard, une menace. Mais chaque pouvoir a un prix… et dans cette ville, chaque mot peut tuer. Traquée, désirée, utilisée, elle va devoir bâtir son empire, découvrir pourquoi elle a été choisie… et pourquoi cette ville connaît son vrai nom.",
   "style": "webtoon",
-  "num_panels": 2,
-  "characters": ["Yuki"],
-  "additional_context": "The story should have a black feel with dark plot and only One main character"
+  "num_panels": 10,
+  "characters": ["Lina"],
+  "additional_context": "The story should have One main character"
 }
 
 ### Check Task Status

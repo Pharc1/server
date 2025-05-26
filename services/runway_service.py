@@ -27,7 +27,8 @@ class RunwayService:
         }
 
         if ref:
-            task_params['reference_images'] = ref
+            if "@" in prompt:
+                task_params['reference_images'] = ref
 
         task = self.client.text_to_image.create(**task_params)
         task_id = task.id
