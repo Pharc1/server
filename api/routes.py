@@ -103,7 +103,22 @@ async def generate_webtoon_task(
                 await asyncio.sleep(1)
 
 
-
+        # Generate timeline
+        logger.info(f"Generating timeline for task {task_id}")
+        attempt = 0
+        
+        while attempt < max_attempts:
+            try:
+                attempt += 1
+                timeline = await generator.generate_timeline(
+                    story,
+                )
+                break
+            except Exception as e:
+                logger.warning(f"Timeline generation attempt {attempt}/{max_attempts} failed: {str(e)}")
+                if attempt >= max_attempts:
+                    raise ValueError(f"Failed to generate timeline after {max_attempts} attempts: {str(e)}")
+                await asyncio.sleep(1)
 
 
 
@@ -116,7 +131,8 @@ async def generate_webtoon_task(
             try:
                 attempt += 1
                 panels = await generator.generate_panels(
-                    story, 
+                    story,
+                    timeline, 
                     request.num_panels
                     
                 )

@@ -314,7 +314,7 @@ class AI:
         2. Setting (time period, location)
         3. Main characters (with brief visual descriptions)
         4. Main place (with brief descriptions, and a name with single word)
-        5. Plot summary
+        5. Summary
         6. Key scenes that would make good visual panels
         7. Theme and mood
         
@@ -352,10 +352,68 @@ class AI:
         except Exception as e:
             logger.error(f"Error generating story: {str(e)}")
             raise
-    
+    async def generate_timeline(
+        self,
+        story: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """        Generate a timeline of key events in the story.
+        Args:
+            story: The story outline dictionary 
+        Returns:
+            A list of key episodes with descriptions.
+        """
+        system_message = """
+        You are a professional manga/webtoon writer. Your task is to create a timeline of key episodes following this structure depending of the genre you recognise in the story:
+        ARC Structure per genre, each arcs represent at least 40 episodes:
+            "Romance": {
+                "intro": "Rencontre, tension légère",
+                "middle": "Premiers obstacles, moments de rapprochement",
+                "climax": "Rupture / obstacle / rival inattendu",
+                "end": "Résolution et amour scellé ou tragédie"
+            },
+            "Fantasy": {
+                "intro": "Monde réel → téléportation ou révélation de pouvoir, Introduction du monde et des règles",
+                "middle": "Apprentissage, Entrainement, exploration, montée en puissance",
+                "climax": "Guerre, complot, trahison ou révélation de pouvoir",
+                "end": "Combat final, retour au monde réel ou nouveau statut"
+            },
+            "Action": {
+                "intro": "Conflit ou crime initial",
+                "middle": "Investigation, Chasse, énigmes, tensions",
+                "climax": "Trahison, tension maximale, twist majeur",
+                "end": "Vérité révélée, twist final, victoire amère ou tragique"
+            },
+            "Horreur": {
+                "intro": "Atmosphère étrange, premiers signes de danger léger",
+                "middle": "Découverte de secrets, meurtres ou phénomènes ou de mal profonds",
+                "climax": "Vérité choquante, perte mentale",
+                "end": "Soit résolution flou, soit fin ouverte flippante"
+            }
+        """
+
+        user_message = f"Here is the history outline: {json.dumps(story)}\n\n" \
+                       "Generate the first episode of the story, following the structure based on the genre you recognize in the story. " \
+
+        try:
+            result = await self._make_request(
+                system_message,
+                user_message,
+                response_model=StoryResponse,
+                response_format="json_object",
+            )
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error generating episode: {str(e)}")
+            raise
+
+
+
+
     async def generate_panel_descriptions(
         self, 
-        story: Dict[str, Any], 
+        story: Dict[str, Any],
+        timeline: str, 
         num_panels: int
     ) -> List[Dict[str, Any]]:
         """
@@ -370,7 +428,7 @@ class AI:
         """
         system_message = """
         You are a professional webtoon artist and writer. Your task is to create detailed 
-        panel descriptions based on the provided story outline. Each panel description should include:
+        panel descriptions based on the provided story outline and episode. Each panel description should include:
         1. Visual description (what should be drawn)
         2. Characters present
         3. Place if applicable
@@ -383,9 +441,9 @@ class AI:
         
         user_message = f"""
         Story outline: {json.dumps(story)}
-        
-        Create {num_panels} panel descriptions for this story that would make a compelling manga/webtoon.
-        Make sure the panels flow logically and capture key moments from the story.
+        Episode you need to generate panel for: {timeline}
+        Create {num_panels} panel descriptions for this story that would make a compelling webtoon.
+        Make sure the panels flow logically and capture key moments from the episode.
         """
         
         try:

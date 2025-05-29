@@ -59,8 +59,34 @@ class StoryService:
         except Exception as e:
             logger.error(f"Error generating story: {str(e)}")
             raise
+    async def generate_timeline(self, story: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Generate a timeline of episodes from a story outline
+        
+        Args:
+            story: Story outline dictionary
+            
+        Returns:
+            List of episodes in the story
+        """
+        logger.info("Generating timeline from story outline")
+        
+        try:
+            # Generate timeline using AI
+            timeline = await self.ai.generate_timeline(story)
+            
+            if not timeline:
+                logger.warning("No events generated for the timeline")
+                return []
+                
+            logger.info(f"Generated {len(timeline)} episodes in the timeline")
+            return timeline
+            
+        except Exception as e:
+            logger.error(f"Error generating timeline: {str(e)}")
+            raise
     
-    async def generate_panels(self, story: Dict[str, Any], num_panels: int) -> List[Panel]:
+    async def generate_panels(self, story: Dict[str, Any],timeline: str,  num_panels: int) -> List[Panel]:
         """
         Generate panel descriptions from a story outline
         
@@ -75,7 +101,7 @@ class StoryService:
         
         try:
             # Generate panel descriptions using AI
-            panel_descriptions = await self.ai.generate_panel_descriptions(story, num_panels)
+            panel_descriptions = await self.ai.generate_panel_descriptions(story, timeline,  num_panels)
             
             panels = []
             for i, panel_desc in enumerate(panel_descriptions):

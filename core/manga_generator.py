@@ -62,20 +62,37 @@ class MangaGenerator:
         
         logger.info("Story generation completed")
         return story
+
+    async def generate_timeline(self, story: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Generate a timeline of events from the story
         
-    async def generate_panels(self, story: Dict[str, Any], num_panels: int) -> List[Panel]:
+        Args:
+            story: The story outline dictionary
+            
+        Returns:
+            A list of dictionaries representing the episodes
+        """
+        logger.info("Generating timeline from story")
+        timeline = await self.story_service.generate_timeline(story)
+        
+        logger.info("Timeline generation completed")
+        return timeline
+
+    async def generate_panels(self, story: Dict[str, Any],timeline: str,  num_panels: int) -> List[Panel]:
         """
         Generate panel descriptions from the story
         
         Args:
             story: The story outline dictionary
+            timeline: The timeline of the episode
             num_panels: The desired number of panels
             
         Returns:
             A list of Panel objects
         """
         logger.info(f"Generating {num_panels} panels from story")
-        panels = await self.story_service.generate_panels(story, num_panels)
+        panels = await self.story_service.generate_panels(story,timeline, num_panels)
         
         # Apply layout considerations to each panel
         logger.info("Applying layout to panels")
