@@ -24,11 +24,20 @@ class RunwayService:
             'model': 'gen4_image',
             'ratio': size,
             'prompt_text': prompt[1000:] if len(prompt) > 1000 else prompt,
+            'reference_images': [
+                {
+                    'uri': 'https://www.lesaventuresludiques.com/wp-content/uploads/2025/03/nouveau-jeu-solo-leveling.jpg'
+                },
+            ]
         }
+
+
 
         if ref:
             if "@" in prompt:
-                task_params['reference_images'] = ref
+                for reference in ref:
+                    task_params['reference_images'].append(reference)
+                
 
         task = self.client.text_to_image.create(**task_params)
         task_id = task.id
