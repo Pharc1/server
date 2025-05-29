@@ -1,3 +1,4 @@
+import base64
 import logging
 import os
 import time
@@ -6,6 +7,11 @@ from runwayml import RunwayML
 
 
 logger = logging.getLogger(__name__)
+
+def get_base64_image(image_path: str) -> str:
+        with open(image_path, "rb") as f:
+            base64_image = base64.b64encode(f.read()).decode("utf-8")
+        return f"data:image/png;base64,{base64_image}"
 
 class RunwayService:
     "servicr for generating with runway "
@@ -17,6 +23,9 @@ class RunwayService:
             logger.info("no Runway api key founded")
         self.client = RunwayML(api_key=self.api_key)
 
+    
+
+
     async def generate_image(self, prompt: str, ref: List, size: str = "1080:1920") -> str:
         print(f"Generating image with prompt: {prompt}, size: {size}, reference images: {ref}")
         
@@ -26,22 +35,18 @@ class RunwayService:
             'prompt_text': prompt[1000:] if len(prompt) > 1000 else prompt,
             'reference_images': [
                 {
-                    'uri': 'https://www.lesaventuresludiques.com/wp-content/uploads/2025/03/nouveau-jeu-solo-leveling.jpg'
-                },
+                    'uri': get_base64_image('static\\images\style.png')
+                }
             ]
         }
 
-
-
         if ref:
             if "@" in prompt:
-                for reference in ref:
-                    task_params['reference_images'].append(reference)
+                task_params['reference_images'] = ref
                 
 
         task = self.client.text_to_image.create(**task_params)
         task_id = task.id
-
         # Poll the task until it's complete
         time.sleep(1)  # Wait for a second before polling
         task = self.client.tasks.retrieve(task_id)

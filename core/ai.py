@@ -312,7 +312,7 @@ class AI:
         story outline based on the provided prompt. The outline should include:
         1. Title of the story
         2. Setting (time period, location)
-        3. Main characters (with brief visual descriptions)
+        3. Main characters (with brief visual descriptions named "description")
         4. Main place (with brief descriptions, and a name with single word)
         5. Summary
         6. Key scenes that would make good visual panels
@@ -398,7 +398,7 @@ class AI:
                 system_message,
                 user_message,
                 response_model=StoryResponse,
-                response_format="json_object",
+                response_format="text",
             )
             
             return result
@@ -491,7 +491,15 @@ class AI:
         4. Art style references
         5. Composition details
         
+        you should follow these rules:
+        1. The prompt should be descriptive and specific to the panel content only.
+        2. The prompt should not include any text or dialogue.
+        3. If the prompt is mainly refering to a character speaking you should makle a blur bacground or clear white.
+        4. If you reference a character or a place provided in the context you must use an @ prefix but only if provided in context! 
+
         The prompt should be concise, under 1000 Characters describing only what appearing on the image.
+
+        Do not include any text or dialogue in the prompt.
 
         If you need to refer to specific characters, always use their names only if provided in characters with @ prefix.
         If you need to refer to specific place, always use the place name only if provided in place with @ prefix.
@@ -501,11 +509,12 @@ class AI:
         """
         
         user_message = f"""
+        Here is the context: 
         Panel description: {panel_description}
         Characters: {', '.join(characters)}
         Place: {place}
         Style: {style}
-        
+        End of context.
         Create a detailed image generation prompt that will result in a high-quality {style}-style illustration.
         """
         
