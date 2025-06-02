@@ -320,18 +320,23 @@ Provide specific, actionable suggestions that improve narrative flow and visual 
             if tool_name == "generate_story":
                 story = await self.manga_generator.generate_story(
                     arguments.get("prompt", ""),
-                    arguments.get("additional_context", None)
+                    arguments.get("additional_context", None) + "\n\n Max 2 main characters"
                 )
                 return json.dumps(story)
                 
             elif tool_name == "generate_panels":
                 story = arguments.get("story", {})
+                timeline = arguments.get("timeline", "")
                 num_panels = arguments.get("num_panels", 6)
+
                 panels = await self.manga_generator.generate_panels(
                     story,
+                    timeline,
                     num_panels
                 )
-                return json.dumps(panels)
+                return json.dumps({
+                    "panels": [panel.model_dump() for panel in panels]
+                })
                 
             elif tool_name == "generate_image":
                 # This would actually call the image generation service
@@ -360,16 +365,16 @@ Provide specific, actionable suggestions that improve narrative flow and visual 
                 # Create a request for the webtoon generator
                 webtoon_request = WebtoonRequest(
                     prompt=arguments.get("prompt", ""),
-                    style=arguments.get("style", "manga"),
-                    num_panels=arguments.get("num_panels", 6),
-                    additional_context=arguments.get("additional_context", "")
+                    style=arguments.get("style", "webtoon"),
+                    num_panels=arguments.get("num_panels", 6),  
+                    additional_context=arguments.get("additional_context", "") + "\n\n Max 2 main characters"
                 )
                 
                 # Generate a task ID
                 import uuid
                 task_id = str(uuid.uuid4())
                 
-                # Start the webtoon generation process (this is normally done in the API route)
+                # Start the webtoon process (this is normally done in the API route)
                 import asyncio
                 asyncio.create_task(generate_webtoon_task(task_id, webtoon_request, self.ai))
                 
@@ -389,3 +394,4 @@ Provide specific, actionable suggestions that improve narrative flow and visual 
         except Exception as e:
             logger.error(f"Error executing tool {tool_name}: {str(e)}")
             return json.dumps({"error": f"Error executing {tool_name}: {str(e)}"})
+

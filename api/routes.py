@@ -83,6 +83,13 @@ async def generate_webtoon_task(
                 # Wait briefly before retry
                 await asyncio.sleep(1)
         
+        tasks[task_id].current_stage = 0
+        tasks[task_id].data = {
+            "type": "generation_start",
+            "title": story.get("title", "Webtoon Story"),
+            "message": "Création de votre histoire en cours..."
+        }
+
         tasks[task_id].progress = 0.1
 
         # Add retry logic with a maximum number of attempts
@@ -101,7 +108,14 @@ async def generate_webtoon_task(
                 if attempt >= max_attempts:
                     raise ValueError(f"Failed to generate images reference after {max_attempts} attempts: {str(e)}")
                 await asyncio.sleep(1)
-
+        
+        tasks[task_id].current_stage = 1
+        tasks[task_id].progress = 0.2
+        tasks[task_id].data = {
+            "type": "characters_created",
+            "characters": story.get("mains_characters", []),
+        }
+        #TODO : Merge charcters and images_ref into a single data structure for acces to images
 
         # Generate timeline
         logger.info(f"Generating timeline for task {task_id}")
@@ -119,6 +133,21 @@ async def generate_webtoon_task(
                 if attempt >= max_attempts:
                     raise ValueError(f"Failed to generate timeline after {max_attempts} attempts: {str(e)}")
                 await asyncio.sleep(1)
+        tasks[task_id].current_stage = 2
+        tasks[task_id].progress = 0.4
+        tasks[task_id].data = {
+            "type": "location_created",
+            "location": story.get("main_place", "Unknown Location"),
+        }
+
+
+        tasks[task_id].current_stage = 3
+        tasks[task_id].progress = 0.5
+        tasks[task_id].data = {
+            "type": "synopsis_created",
+            "location": timeline.get("main_place", "No synopsis available"),
+        }
+
 
 
 
@@ -143,7 +172,7 @@ async def generate_webtoon_task(
                     raise ValueError(f"Failed to generate panels after {max_attempts} attempts: {str(e)}")
                 await asyncio.sleep(1)
                 
-        tasks[task_id].progress = 0.5
+        tasks[task_id].progress = 0.6
         
         # Generate images for each panel
         logger.info(f"Generating images for task {task_id}")
@@ -163,12 +192,17 @@ async def generate_webtoon_task(
         tasks[task_id] = TaskStatus(
             task_id=task_id,
             status="completed",
+
             progress=1.0,
             result={
                 "html_path": html_path,
                 "panel_count": len(panels),
                 "story_title": story.get("title", "Untitled Webtoon")
+            },
+            data = {
+                "type": "generation_complete"
             }
+
         )
         logger.info(f"Task {task_id} completed successfully")
         

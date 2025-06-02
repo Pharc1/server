@@ -429,7 +429,7 @@ class AI:
         system_message = """
         You are a professional webtoon artist and writer. Your task is to create detailed 
         panel descriptions based on the provided story outline and episode. Each panel description should include:
-        1. Visual description (what should be drawn)
+        1. Visual description (what should be drawn) "visual_description"
         2. Characters present
         3. Place if applicable
         3. Dialogue (if any)

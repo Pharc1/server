@@ -23,6 +23,8 @@ class TaskStatus(BaseModel):
     status: str = Field(..., description="Status of the task: pending, processing, completed, failed")
     progress: float = Field(default=0.0, description="Progress from 0.0 to 1.0", ge=0.0, le=1.0)
     result: Optional[Dict[str, Any]] = Field(default=None, description="Results when task is completed")
+    current_stage: Optional[int] = Field(default=0, description="Current stage of the Loading process")
+    data: Optional[Dict[str, Any]] = Field(default=None, description="data related to the task")
 
 class PanelUpdate(BaseModel):
     """Request model for updating a panel"""

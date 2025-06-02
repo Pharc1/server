@@ -12,7 +12,7 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "prompt": "Lina, peiné par son premier amour dans sa jeunesse n'a plus jamais cotyé d'homme jusqu'a ses 30 ans, lorsqu'elle se rends compte qu'elle se prends d'amour pour son boss Fuyuki elle se rend compte que celui ci n'est autre que son premier amour perdu...",
+  "prompt": "A boy named fuyuki wake up one day with a lot of muscle and an incredible face, he is a high school student and he is very popular with his new face, but before that he was victim of a bully named Lina, she was the most popular of the school at this time, When she met fuyuki with his new body she wanted to become friend with him immediatlly but she didn't know that he was the one she bullied before, she might fell in love with the guy she didn't like before that..",
   "style": "webtoon",
   "num_panels": 10,
   "characters": ["Lina", "Fuyuki"],
