@@ -320,7 +320,7 @@ Provide specific, actionable suggestions that improve narrative flow and visual 
             if tool_name == "generate_story":
                 story = await self.manga_generator.generate_story(
                     arguments.get("prompt", ""),
-                    arguments.get("additional_context", None) + "\n\n Max 2 main characters"
+                    arguments.get("additional_context", "") + "\n\n Max 2 main characters"
                 )
                 return json.dumps(story)
                 

@@ -57,7 +57,7 @@ async def generate_webtoon_task(
         generator = MangaGenerator(ai)
         
         # Generate the story and update progress
-        tasks[task_id].progress = 0.1
+        
         logger.info(f"Generating story for task {task_id}")
         
         # Add retry logic with a maximum number of attempts
@@ -86,18 +86,22 @@ async def generate_webtoon_task(
         tasks[task_id].current_stage = 0
         tasks[task_id].data = {
             "type": "generation_start",
-            "title": story.get("title", "Webtoon Story"),
-            "message": "Création de votre histoire en cours..."
+            "title": story.get("title", "Webtoon Story")
         }
+        await asyncio.sleep(1)
 
         tasks[task_id].progress = 0.1
-
+        print(f"Stage 0 updated for task !!!!!!!!!!!!!!!")
+        print(f"🎯 GENERATION_START SET FOR TASK {task_id}")
+        print(f"🎯 tasks[{task_id}].data = {tasks[task_id].data}")
+        print(f"🎯 tasks[{task_id}].status = {tasks[task_id].status}")
         # Add retry logic with a maximum number of attempts
         logger.info(f"Generating images reference for task {task_id}")
         attempt = 0
         while attempt < max_attempts:
             try:
                 attempt += 1
+                print(f"🖼️ ABOUT TO START IMAGE REFERENCE GENERATION for task {task_id}")
                 images_ref = await generator.generate_images_reference(
                     story, 
                 )
@@ -111,18 +115,20 @@ async def generate_webtoon_task(
         
         tasks[task_id].current_stage = 1
         tasks[task_id].progress = 0.2
-        if story.get("mains_characters"):
-            charachters = story["mains_characters"]
-            for character in charachters:
+        characters = []
+        if story.get("main_characters"):  
+            characters = story["main_characters"]
+            for character in characters:
                 if "name" in character:
                     for image in images_ref:
                         if image.get("tag") == character["name"]:
                             character["image"] = image.get("uri")
-                            
+
         tasks[task_id].data = {
             "type": "characters_created",
-            "characters": charachters if story.get("mains_characters") else "No main characters defined",
+            "characters": characters,  
         }
+        print(f"Stage 1 updated for task {task_id}: {tasks[task_id].data}")
         
 
         # Generate timeline
@@ -313,6 +319,7 @@ async def get_task_status(task_id: str):
     if task_id not in tasks:
         logger.warning(f"Task not found: {task_id}")
         raise HTTPException(status_code=404, detail="Task not found")
+    print(f"Retrieved status for task {task_id}: {tasks[task_id]}")
     
     logger.debug(f"Retrieved status for task {task_id}: {tasks[task_id].status}")
     return tasks[task_id]

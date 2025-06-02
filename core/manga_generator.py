@@ -206,6 +206,7 @@ class MangaGenerator:
         logger.info("Generating images for all panels")
         image_urls = []
         i= 0
+        print(f"🖼️ ABOUT TO START IMAGE REFERENCE GENERATION for task call from function ")
         if story.get("main_characters"):
             for character in story.get("main_characters"):
                 
