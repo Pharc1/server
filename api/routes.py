@@ -111,11 +111,19 @@ async def generate_webtoon_task(
         
         tasks[task_id].current_stage = 1
         tasks[task_id].progress = 0.2
+        if story.get("mains_characters"):
+            charachters = story["mains_characters"]
+            for character in charachters:
+                if "name" in character:
+                    for image in images_ref:
+                        if image.get("tag") == character["name"]:
+                            character["image"] = image.get("uri")
+                            
         tasks[task_id].data = {
             "type": "characters_created",
-            "characters": story.get("mains_characters", []),
+            "characters": charachters if story.get("mains_characters") else "No main characters defined",
         }
-        #TODO : Merge charcters and images_ref into a single data structure for acces to images
+        
 
         # Generate timeline
         logger.info(f"Generating timeline for task {task_id}")
@@ -133,20 +141,32 @@ async def generate_webtoon_task(
                 if attempt >= max_attempts:
                     raise ValueError(f"Failed to generate timeline after {max_attempts} attempts: {str(e)}")
                 await asyncio.sleep(1)
+
+
+        # Update task status with location  data
+        if story.get("main_place"):
+                    place = story["main_place"]
+                    for image in images_ref:
+                        if image.get("tag") == place["name"]:
+                            place["image"] = image.get("uri")
+
         tasks[task_id].current_stage = 2
         tasks[task_id].progress = 0.4
         tasks[task_id].data = {
             "type": "location_created",
-            "location": story.get("main_place", "Unknown Location"),
+            "location": place if story.get("main_place") else "No main place defined",
         }
 
+        
 
         tasks[task_id].current_stage = 3
         tasks[task_id].progress = 0.5
         tasks[task_id].data = {
             "type": "synopsis_created",
-            "location": timeline.get("main_place", "No synopsis available"),
+            "synopsis": story.get("synopsis", "No synopsis provided")
         }
+
+        
 
 
 
