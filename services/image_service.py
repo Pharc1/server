@@ -151,7 +151,7 @@ class ImageService:
         
         try:
             # Generate the image
-            image_path, image_url = await self._call_image_api("Full-body shot" + character, "webtoon", filename_prefix)
+            image_path, image_url = await self._call_image_api("Full-body shot" + character, "webtoon", filename_prefix, size= "1024:1024")
             logger.info(f"Character image generated at: {image_path} (URL: {image_url})")
             
             return image_path, image_url
@@ -168,6 +168,7 @@ class ImageService:
         style: str ,
         filename_prefix: str,
         images_ref: Optional[List] = None,
+        size: str = "1080:1920",
         model: Optional[str] = "runway"
     ) -> Tuple[str, str]:
         """
@@ -204,7 +205,8 @@ class ImageService:
                 
                 image_url = await runwayService.generate_image(
                     prompt=full_prompt,
-                    ref=images_ref
+                    ref=images_ref,
+                    size=size
                 )
 
                 return image_url, image_url

@@ -20,6 +20,7 @@ class StoryResponse(BaseModel):
     setting: Dict[str, str] = Field(..., description="Time period and location details")
     main_characters: List[Dict[str, str]] = Field(..., description="List of main characters with descriptions")
     main_place: Dict[str, str] = Field(..., description="Main place with a single word name and description")
+    synopsis: str = Field(..., description="Short synopsis for teasing the story")
     plot_summary: str = Field(..., description="Summary of the plot")
     key_scenes: List[Union[str, Dict[str, str]]] = Field(..., description="Key scenes for visual panels, can be strings or dictionaries with 'scene' key")
     theme: str = Field(..., description="Theme of the story")

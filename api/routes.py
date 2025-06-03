@@ -88,13 +88,16 @@ async def generate_webtoon_task(
             "type": "generation_start",
             "title": story.get("title", "Webtoon Story")
         }
-        await asyncio.sleep(1)
+        await asyncio.sleep(1) 
+        
+        tasks[task_id].current_stage = 1
+        tasks[task_id].progress = 0.05
+        tasks[task_id].data = {
+            "type": "synopsis_created",
+            "synopsis": story.get("synopsis", "No synopsis provided")
+        }
 
         tasks[task_id].progress = 0.1
-        print(f"Stage 0 updated for task !!!!!!!!!!!!!!!")
-        print(f"🎯 GENERATION_START SET FOR TASK {task_id}")
-        print(f"🎯 tasks[{task_id}].data = {tasks[task_id].data}")
-        print(f"🎯 tasks[{task_id}].status = {tasks[task_id].status}")
         # Add retry logic with a maximum number of attempts
         logger.info(f"Generating images reference for task {task_id}")
         attempt = 0
@@ -112,8 +115,9 @@ async def generate_webtoon_task(
                 if attempt >= max_attempts:
                     raise ValueError(f"Failed to generate images reference after {max_attempts} attempts: {str(e)}")
                 await asyncio.sleep(1)
+
         
-        tasks[task_id].current_stage = 1
+        tasks[task_id].current_stage = 2
         tasks[task_id].progress = 0.2
         characters = []
         if story.get("main_characters"):  
@@ -121,7 +125,7 @@ async def generate_webtoon_task(
             for character in characters:
                 if "name" in character:
                     for image in images_ref:
-                        if image.get("tag") == character["name"]:
+                        if image.get("tag") == character["name"].strip().split(" ")[0]:
                             character["image"] = image.get("uri")
 
         tasks[task_id].data = {
@@ -156,7 +160,7 @@ async def generate_webtoon_task(
                         if image.get("tag") == place["name"]:
                             place["image"] = image.get("uri")
 
-        tasks[task_id].current_stage = 2
+        tasks[task_id].current_stage = 3
         tasks[task_id].progress = 0.4
         tasks[task_id].data = {
             "type": "location_created",
@@ -165,12 +169,7 @@ async def generate_webtoon_task(
 
         
 
-        tasks[task_id].current_stage = 3
-        tasks[task_id].progress = 0.5
-        tasks[task_id].data = {
-            "type": "synopsis_created",
-            "synopsis": story.get("synopsis", "No synopsis provided")
-        }
+        
 
         
 
