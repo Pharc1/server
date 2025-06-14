@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Body, Depends
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 
 from api.models import (
     WebtoonRequest,
@@ -19,6 +19,7 @@ from api.models import (
 )
 from core.ai import AI
 from core.manga_generator import MangaGenerator
+from core.json_renderer import JSONRenderer
 from models.panel import PanelRequest
 
 # Configure logging
@@ -209,25 +210,26 @@ async def generate_webtoon_task(
             )
             tasks[task_id].progress = 0.5 + ((i + 1) / len(panels) * 0.4)
         
-        # Generate HTML output
-        logger.info(f"Generating HTML output for task {task_id}")
-        html_path = await generator.generate_html_output(panels, task_id)
-        
+        # Generate output
+        logger.info(f"Generating output for task {task_id}")
+        result = await generator.generate_output(panels, task_id)
+        tasks[task_id].data = {
+            "type": "generation_complete"
+        }
         # Update task status to completed
         tasks[task_id] = TaskStatus(
             task_id=task_id,
             status="completed",
-
             progress=1.0,
             result={
-                "html_path": html_path,
+                "panels": panels,
                 "panel_count": len(panels),
-                "story_title": story.get("title", "Untitled Webtoon")
+                "story_title": story.get("title", "Untitled Webtoon"),
+                "json_path": result["json_path"]
             },
             data = {
                 "type": "generation_complete"
             }
-
         )
         logger.info(f"Task {task_id} completed successfully")
         
@@ -323,9 +325,9 @@ async def get_task_status(task_id: str):
     logger.debug(f"Retrieved status for task {task_id}: {tasks[task_id].status}")
     return tasks[task_id]
 
-@router.get("/result/{task_id}", response_class=HTMLResponse)
+@router.get("/result/{task_id}", response_class=JSONResponse)
 async def get_webtoon_result(task_id: str):
-    """Get the HTML result of a completed webtoon generation task"""
+    """Get the JSON result of a completed webtoon generation task"""
     if task_id not in tasks:
         logger.warning(f"Task not found: {task_id}")
         raise HTTPException(status_code=404, detail="Task not found")
@@ -335,16 +337,22 @@ async def get_webtoon_result(task_id: str):
         logger.warning(f"Task {task_id} is not completed: {task.status}")
         raise HTTPException(status_code=400, detail=f"Task is not completed, current status: {task.status}")
     
-    html_path = task.result.get("html_path")
-    if not html_path or not os.path.exists(html_path):
-        logger.error(f"HTML output not found for task {task_id}: {html_path}")
-        raise HTTPException(status_code=404, detail="HTML output not found")
+    # Get the panels from the task result
+    panels = task.result.get("panels", [])
+    if not panels:
+        logger.error(f"No panels found for task {task_id}")
+        raise HTTPException(status_code=404, detail="No panels found")
     
-    with open(html_path, "r") as f:
-        html_content = f.read()
+    # Create JSON renderer and generate JSON output
+    renderer = JSONRenderer()
+    webtoon_data = renderer.render_webtoon(
+        panels=panels,
+        title=task.result.get("story_title", "Untitled Webtoon"),
+        timestamp=datetime.now().isoformat()
+    )
     
-    logger.info(f"Returning HTML result for task {task_id}")
-    return HTMLResponse(content=html_content)
+    logger.info(f"Returning JSON result for task {task_id}")
+    return JSONResponse(content=webtoon_data)
 
 @router.post("/projects", response_model=ProjectResponse)
 async def create_project(request: ProjectRequest):

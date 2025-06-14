@@ -16,6 +16,7 @@ from services.image_service import ImageService
 from services.layout_service import LayoutService
 from utils.helpers import ensure_directories_exist, generate_timestamp, save_data_to_json
 from config import get_image_url
+from core.json_renderer import JSONRenderer
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ class MangaGenerator:
         self.image_service = ImageService(self.ai)
         self.layout_service = LayoutService()
         self.html_renderer = HTMLRenderer()
+        self.json_renderer = JSONRenderer()
         
         # Ensure output directories exist
         ensure_directories_exist()
@@ -227,49 +229,51 @@ class MangaGenerator:
             
         return image_urls
         
-    async def generate_html_output(self, panels: List[Panel], task_id: str) -> str:
+    async def generate_output(self, panels: List[Panel], task_id: str) -> Dict[str, Any]:
         """
-        Generate the final HTML output for the manga/webtoon
+        Generate the final output for the webtoon and save it to a JSON file
         
         Args:
             panels: List of Panel objects
-            task_id: Unique task identifier
+            task_id: Task ID for the generation
             
         Returns:
-            Path to the generated HTML file
+            Dictionary containing the task result with panels
         """
+        logger.info(f"Generating output for task {task_id}")
+        
+        # Create output directory if it doesn't exist
+        output_dir = "static/output"
+        os.makedirs(output_dir, exist_ok=True)
+        
         # Create a unique filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"webtoon_{task_id}_{timestamp}.html"
-        output_path = f"static/output/{filename}"
+        json_filename = f"webtoon_{task_id}_{timestamp}.json"
+        json_path = os.path.join(output_dir, json_filename)
         
-        logger.info(f"Generating HTML output at {output_path}")
-        
-        # Generate HTML content
-        html_content = self.html_renderer.render_webtoon(
-            panels, 
+        # Generate JSON data using the JSONRenderer
+        webtoon_data = self.json_renderer.render_webtoon(
+            panels=panels,
             title=f"SketchDojo Webtoon #{task_id}",
             timestamp=timestamp
         )
         
-        # Save HTML file asynchronously
+        # Save JSON file asynchronously
         try:
-            async with aiofiles.open(output_path, "w") as f:
-                await f.write(html_content)
-                
-            # Save panel data for reference
-            data_path = f"static/output/data_{task_id}_{timestamp}.json"
-            panel_data = [panel.dict() for panel in panels]
-            
-            await save_data_to_json_async(data_path, panel_data)
-                
-            logger.info(f"HTML output saved to {output_path}")
-            return output_path
-            
+            async with aiofiles.open(json_path, "w", encoding="utf-8") as f:
+                await f.write(json.dumps(webtoon_data, indent=2, ensure_ascii=False))
+            logger.info(f"JSON output saved to {json_path}")
         except Exception as e:
-            logger.error(f"Error saving HTML output: {str(e)}")
+            logger.error(f"Error saving JSON output: {str(e)}")
             raise
         
+        # Return the panels and file path in the task result
+        return {
+            "panels": panels,
+            "panel_count": len(panels),
+            "json_path": json_path
+        }
+
     async def update_panel(self, panel_id: str, updates: Dict[str, Any]) -> Panel:
         """
         Update a specific panel with new details

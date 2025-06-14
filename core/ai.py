@@ -313,8 +313,8 @@ class AI:
         story outline based on the provided prompt. The outline should include:
         1. Title of the story
         2. Setting (time period, location)
-        3. Main characters list (with brief visual descriptions named "description", "name", "age", "height", "origin", "personality") all str
-        4. Main place (with brief descriptions, and a name with single word)
+        3. Main characters list (with brief visual descriptions named "description", "name": no accent, english type word, "age", "height", "origin", "personality") all string 
+        4. Main place (with brief descriptions, and a name with single word in english)
         5. synopsis for teasing the story keep it short and concise named "synopsis"
         6. Summary
         7. Key scenes that would make good visual panels
